@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindWell - Mental Health Companion</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 5px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .nav-tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .mood-tracker {
+            text-align: center;
+        }
+        
+        .mood-scale {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            gap: 10px;
+        }
+        
+        .mood-option {
+            flex: 1;
+            padding: 20px;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .mood-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .mood-option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .mood-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .journal-section {
+            margin: 30px 0;
+        }
+        
+        .journal-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1rem;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .journal-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .sentiment-display {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .sentiment-positive {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .sentiment-neutral {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .sentiment-negative {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .chart-container {
+            margin: 30px 0;
+            height: 400px;
+            position: relative;
+        }
+        
+        .recommendations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .recommendation-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .recommendation-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .community-posts {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        
+        .post {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .post-author {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .wearable-status {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+        }
+        
+        .status-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            margin: 0 10px;
+        }
+        
+        .status-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .ai-insights {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .privacy-badge {
+            display: inline-flex;
+            align-items: center;
+            background: #28a745;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin: 10px 0;
+        }
+        
+        .recording-indicator {
+            width: 12px;
+            height: 12px;
+            background: #dc3545;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        
+        .prompt-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .prompt-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .pixels-grid {
+            display: grid;
+            grid-template-columns: repeat(53, 1fr);
+            gap: 2px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .pixel {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .pixel:hover {
+            transform: scale(1.5);
+        }
+        
+        .pixel-1 { background: #ff6b6b; }
+        .pixel-2 { background: #ffa726; }
+        .pixel-3 { background: #ffeb3b; }
+        .pixel-4 { background: #66bb6a; }
+        .pixel-5 { background: #42a5f5; }
+        .pixel-empty { background: #e0e0e0; }
+        
+        .pixels-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .goal-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .goal-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .goal-progress {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .emergency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .emergency-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .emergency-card.urgent {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+        
+        .emergency-contact {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .emergency-contact a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .emergency-contact a:hover {
+            text-decoration: underline;
+        }
+        
+        .safety-plan {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .mood-scale {
+                flex-direction: column;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .nav-tab {
+                flex: 1;
+                min-width: 120px;
+            }
+            
+            .wearable-status {
+                flex-direction: column;
+            }
+            
+            .status-card {
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 MindWell</h1>
+            <p>Your AI-Powered Mental Health Companion</p>
+            <div class="privacy-badge">
+                🔒 End-to-End Encrypted & HIPAA Compliant
+            </div>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('mood-tracking')">Mood Tracking</button>
+            <button class="nav-tab" onclick="showTab('analytics')">Analytics</button>
+            <button class="nav-tab" onclick="showTab('recommendations')">Wellness</button>
+            <button class="nav-tab" onclick="showTab('goals')">Goals</button>
+            <button class="nav-tab" onclick="showTab('community')">Community</button>
+            <button class="nav-tab" onclick="showTab('wearables')">Devices</button>
+            <button class="nav-tab" onclick="showTab('emergency')">Emergency</button>
+        </div>
+        
+        <!-- Mood Tracking Tab -->
+        <div id="mood-tracking" class="tab-content active">
+            <div class="mood-tracker">
+                <h2>How are you feeling today?</h2>
+                <div class="mood-scale">
+                    <div class="mood-option" onclick="selectMood(1, '😢', 'Very Sad')">
+                        <span class="mood-emoji">😢</span>
+                        <div>Very Sad</div>
+                    </div>
+                    <div class="mood-option" onclick="selectMood(2, '😔', 'Sad')">
+                        <span class="mood-emoji">😔</span>
+                        <div>Sad</div>
+                    </div>
+                    <div class="mood-option" onclick="selectMood(3, '😐', 'Neutral')">
+                        <span class="mood-emoji">😐</span>
+                        <div>Neutral</div>
+                    </div>
+                    <div class="mood-option" onclick="selectMood(4, '😊', 'Happy')">
+                        <span class="mood-emoji">😊</span>
+                        <div>Happy</div>
+                    </div>
+                    <div class="mood-option" onclick="selectMood(5, '😄', 'Very Happy')">
+                        <span class="mood-emoji">😄</span>
+                        <div>Very Happy</div>
+                    </div>
+                </div>
+                
+                <div class="journal-section">
+                    <h3>Journal Entry & Voice Analysis</h3>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                        <button class="btn" id="voice-btn" onclick="toggleVoiceRecording()" style="background: #28a745;">
+                            🎤 Record Voice Entry
+                        </button>
+                        <button class="btn" onclick="showQuickPrompts()" style="background: #17a2b8;">
+                            💭 Quick Prompts
+                        </button>
+                    </div>
+                    <div id="voice-status" style="display: none; padding: 15px; background: #f8f9fa; border-radius: 10px; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="recording-indicator"></div>
+                            <span>Recording... Speak naturally about your day</span>
+                        </div>
+                    </div>
+                    <textarea class="journal-input" placeholder="How was your day? What's on your mind? (Or use voice recording above)" oninput="analyzeSentiment(this.value)"></textarea>
+                    <div id="quick-prompts" style="display: none; margin: 15px 0;">
+                        <h4>Quick Reflection Prompts:</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+                            <button class="prompt-btn" onclick="usePrompt('What made me smile today?')">What made me smile today?</button>
+                            <button class="prompt-btn" onclick="usePrompt('What challenged me today?')">What challenged me today?</button>
+                            <button class="prompt-btn" onclick="usePrompt('What am I grateful for?')">What am I grateful for?</button>
+                            <button class="prompt-btn" onclick="usePrompt('How did I grow today?')">How did I grow today?</button>
+                        </div>
+                    </div>
+                    <div id="sentiment-result" class="sentiment-display" style="display: none;"></div>
+                    <div id="voice-analysis" class="sentiment-display" style="display: none;"></div>
+                </div>
+                
+                <button class="btn" onclick="saveMoodEntry()">Save Today's Entry</button>
+            </div>
+        </div>
+        
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <h2>Your Mood Trends</h2>
+            
+            <div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">
+                <button class="btn" onclick="showVisualization('chart')" id="chart-btn">📈 Trend Chart</button>
+                <button class="btn" onclick="showVisualization('pixels')" id="pixels-btn">🎨 Year in Pixels</button>
+                <button class="btn" onclick="showVisualization('calendar')" id="calendar-btn">📅 Calendar View</button>
+            </div>
+            
+            <div id="chart-view" class="chart-container">
+                <canvas id="moodChart"></canvas>
+            </div>
+            
+            <div id="pixels-view" class="chart-container" style="display: none;">
+                <h3>Year in Pixels - 2024</h3>
+                <p style="margin-bottom: 20px;">Each square represents one day. Hover to see details.</p>
+                <div id="year-pixels" class="pixels-grid"></div>
+                <div class="pixels-legend">
+                    <div class="legend-item"><div class="pixel pixel-1"></div> Very Sad</div>
+                    <div class="legend-item"><div class="pixel pixel-2"></div> Sad</div>
+                    <div class="legend-item"><div class="pixel pixel-3"></div> Neutral</div>
+                    <div class="legend-item"><div class="pixel pixel-4"></div> Happy</div>
+                    <div class="legend-item"><div class="pixel pixel-5"></div> Very Happy</div>
+                </div>
+            </div>
+            
+            <div id="calendar-view" class="chart-container" style="display: none;">
+                <h3>Monthly Calendar View</h3>
+                <div id="mood-calendar"></div>
+            </div>
+            
+            <div class="ai-insights">
+                <h3>🤖 AI Predictive Insights</h3>
+                <p id="ai-prediction">Based on your recent patterns, you tend to feel better on weekends and after exercise. Your mood has been trending upward over the past week!</p>
+                <div id="predictive-alerts" style="margin-top: 15px;"></div>
+            </div>
+            
+            <div class="recommendations">
+                <div class="recommendation-card">
+                    <h4>📊 Weekly Summary</h4>
+                    <p>Average mood: 3.8/5<br>Best day: Saturday<br>Improvement: +15%</p>
+                </div>
+                <div class="recommendation-card">
+                    <h4>🎯 Pattern Detection</h4>
+                    <p>You feel happiest after morning workouts and social activities</p>
+                </div>
+                <div class="recommendation-card">
+                    <h4>🔮 Mood Prediction</h4>
+                    <p>Tomorrow's forecast: 😊 Happy<br>Confidence: 78%<br>Suggested prep: Morning meditation</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recommendations Tab -->
+        <div id="recommendations" class="tab-content">
+            <h2>Personalized Wellness Recommendations</h2>
+            
+            <div class="recommendations">
+                <div class="recommendation-card">
+                    <h4>🧘‍♀️ Mindfulness</h4>
+                    <p>Try a 10-minute meditation session. Based on your stress levels, this could help improve your mood by 20%.</p>
+                    <button class="btn" onclick="startActivity('meditation')">Start Meditation</button>
+                </div>
+                
+                <div class="recommendation-card">
+                    <h4>🏃‍♂️ Physical Activity</h4>
+                    <p>A 15-minute walk could boost your mood. Your wearable shows you've been sedentary for 2 hours.</p>
+                    <button class="btn" onclick="startActivity('exercise')">Track Walk</button>
+                </div>
+                
+                <div class="recommendation-card">
+                    <h4>📚 Learning</h4>
+                    <p>Read about stress management techniques. Knowledge empowers better mental health.</p>
+                    <button class="btn" onclick="startActivity('learning')">Browse Articles</button>
+                </div>
+                
+                <div class="recommendation-card">
+                    <h4>🎵 Music Therapy</h4>
+                    <p>Listen to calming music. Studies show it can reduce anxiety by up to 30%.</p>
+                    <button class="btn" onclick="startActivity('music')">Play Playlist</button>
+                </div>
+                
+                <div class="recommendation-card">
+                    <h4>👥 Social Connection</h4>
+                    <p>Reach out to a friend. Social support is crucial for mental wellbeing.</p>
+                    <button class="btn" onclick="startActivity('social')">Contact Friend</button>
+                </div>
+                
+                <div class="recommendation-card">
+                    <h4>💤 Sleep Hygiene</h4>
+                    <p>Your sleep quality affects mood. Try our bedtime routine for better rest.</p>
+                    <button class="btn" onclick="startActivity('sleep')">Sleep Guide</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Community Tab -->
+        <div id="community" class="tab-content">
+            <h2>Community Support</h2>
+            <p>Connect with others on similar journeys. All posts are anonymous and moderated.</p>
+            
+            <div style="margin: 20px 0;">
+                <textarea class="journal-input" placeholder="Share your thoughts, experiences, or encouragement..." style="min-height: 80px;"></textarea>
+                <button class="btn" onclick="sharePost()">Share Anonymously</button>
+            </div>
+            
+            <div class="community-posts">
+                <div class="post">
+                    <div class="post-author">Anonymous User • 2 hours ago</div>
+                    <p>Had a tough week but meditation really helped. The 10-minute sessions in the app are perfect for beginners!</p>
+                    <button class="btn" style="padding: 8px 16px; font-size: 0.9rem;" onclick="supportPost(this)">💙 Support (12)</button>
+                </div>
+                
+                <div class="post">
+                    <div class="post-author">Community Member • 5 hours ago</div>
+                    <p>Remember: progress isn't always linear. Some days are harder than others, and that's okay. You're not alone in this journey.</p>
+                    <button class="btn" style="padding: 8px 16px; font-size: 0.9rem;" onclick="supportPost(this)">💙 Support (28)</button>
+                </div>
+                
+                <div class="post">
+                    <div class="post-author">Wellness Warrior • 1 day ago</div>
+                    <p>Started tracking my mood 30 days ago. Seeing the patterns helped me identify triggers and celebrate small wins!</p>
+                    <button class="btn" style="padding: 8px 16px; font-size: 0.9rem;" onclick="supportPost(this)">💙 Support (15)</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Goals Tab -->
+        <div id="goals" class="tab-content">
+            <h2>Wellness Goals & Progress</h2>
+            
+            <div style="margin-bottom: 30px;">
+                <button class="btn" onclick="showGoalForm()">+ Set New Goal</button>
+            </div>
+            
+            <div id="goal-form" style="display: none; background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 30px;">
+                <h3>Create New Wellness Goal</h3>
+                <div style="margin: 15px 0;">
+                    <label>Goal Type:</label>
+                    <select id="goal-type" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; margin-top: 5px;">
+                        <option value="mood">Mood Improvement</option>
+                        <option value="exercise">Exercise Frequency</option>
+                        <option value="meditation">Meditation Practice</option>
+                        <option value="sleep">Sleep Quality</option>
+                        <option value="social">Social Connection</option>
+                        <option value="custom">Custom Goal</option>
+                    </select>
+                </div>
+                <div style="margin: 15px 0;">
+                    <label>Goal Description:</label>
+                    <input type="text" id="goal-description" placeholder="e.g., Meditate for 10 minutes daily" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; margin-top: 5px;">
+                </div>
+                <div style="margin: 15px 0;">
+                    <label>Target (per week):</label>
+                    <input type="number" id="goal-target" placeholder="7" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; margin-top: 5px;">
+                </div>
+                <button class="btn" onclick="saveGoal()">Save Goal</button>
+                <button class="btn" onclick="hideGoalForm()" style="background: #6c757d;">Cancel</button>
+            </div>
+            
+            <div id="goals-list">
+                <div class="goal-card">
+                    <div class="goal-header">
+                        <h4>🧘‍♀️ Daily Meditation</h4>
+                        <span class="goal-progress">5/7 days</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 71%;"></div>
+                    </div>
+                    <p>Meditate for 10 minutes daily - Great progress this week!</p>
+                    <button class="btn" onclick="logGoalProgress('meditation')" style="padding: 8px 16px; font-size: 0.9rem;">✓ Mark Complete Today</button>
+                </div>
+                
+                <div class="goal-card">
+                    <div class="goal-header">
+                        <h4>😊 Mood Stability</h4>
+                        <span class="goal-progress">4.2/5.0 avg</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 84%;"></div>
+                    </div>
+                    <p>Maintain average mood above 4.0 - Excellent work!</p>
+                </div>
+                
+                <div class="goal-card">
+                    <div class="goal-header">
+                        <h4>🏃‍♂️ Weekly Exercise</h4>
+                        <span class="goal-progress">3/4 sessions</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 75%;"></div>
+                    </div>
+                    <p>Exercise 4 times per week - One more session to go!</p>
+                    <button class="btn" onclick="logGoalProgress('exercise')" style="padding: 8px 16px; font-size: 0.9rem;">✓ Log Workout</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Community Tab -->
+        <div id="community" class="tab-content">
+            <h2>Community Support</h2>
+            <p>Connect with others on similar journeys. All posts are anonymous and moderated.</p>
+            
+            <div style="margin: 20px 0;">
+                <textarea class="journal-input" placeholder="Share your thoughts, experiences, or encouragement..." style="min-height: 80px;"></textarea>
+                <button class="btn" onclick="sharePost()">Share Anonymously</button>
+            </div>
+            
+            <div class="community-posts">
+                <div class="post">
+                    <div class="post-author">Anonymous User • 2 hours ago</div>
+                    <p>Had a tough week but meditation really helped. The 10-minute sessions in the app are perfect for beginners!</p>
+                    <button class="btn" style="padding: 8px 16px; font-size: 0.9rem;" onclick="supportPost(this)">💙 Support (12)</button>
+                </div>
+                
+                <div class="post">
+                    <div class="post-author">Community Member • 5 hours ago</div>
+                    <p>Remember: progress isn't always linear. Some days are harder than others, and that's okay. You're not alone in this journey.</p>
+                    <button class="btn" style="padding: 8px 16px; font-size: 0.9rem;" onclick="supportPost(this)">💙 Support (28)</button>
+                </div>
+                
+                <div class="post">
+                    <div class="post-author">Wellness Warrior • 1 day ago</div>
+                    <p>Started tracking my mood 30 days ago. Seeing the patterns helped me identify triggers and celebrate small wins!</p>
+                    <button class="btn" style="padding: 8px 16px; font-size: 0.9rem;" onclick="supportPost(this)">💙 Support (15)</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Wearables Tab -->
+        <div id="wearables" class="tab-content">
+            <h2>Connected Devices</h2>
+            
+            <div class="wearable-status">
+                <div class="status-card">
+                    <div class="status-value">72</div>
+                    <div>Heart Rate</div>
+                    <small>Normal range</small>
+                </div>
+                
+                <div class="status-card">
+                    <div class="status-value">6.5h</div>
+                    <div>Sleep</div>
+                    <small>Last night</small>
+                </div>
+                
+                <div class="status-card">
+                    <div class="status-value">8,432</div>
+                    <div>Steps</div>
+                    <small>Today</small>
+                </div>
+                
+                <div class="status-card">
+                    <div class="status-value">Low</div>
+                    <div>Stress</div>
+                    <small>Current level</small>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <h3>Supported Devices</h3>
+                <div style="display: flex; justify-content: center; gap: 20px; margin: 20px 0; flex-wrap: wrap;">
+                    <button class="btn" onclick="connectDevice('apple-watch')">⌚ Apple Watch</button>
+                    <button class="btn" onclick="connectDevice('fitbit')">📱 Fitbit</button>
+                    <button class="btn" onclick="connectDevice('garmin')">🏃 Garmin</button>
+                    <button class="btn" onclick="connectDevice('samsung')">📲 Samsung Health</button>
+                </div>
+            </div>
+            
+            <div class="ai-insights">
+                <h3>🔍 Biometric Insights</h3>
+                <p>Your heart rate variability suggests good stress management. Sleep quality correlates with your mood ratings - maintaining 7+ hours shows 40% better mood scores.</p>
+            </div>
+        </div>
+        
+        <!-- Emergency Tab -->
+        <div id="emergency" class="tab-content">
+            <h2>🆘 Emergency Resources</h2>
+            <p style="color: #dc3545; font-weight: bold; margin-bottom: 20px;">If you're in immediate danger, please call emergency services (911) right away.</p>
+            
+            <div class="emergency-grid">
+                <div class="emergency-card urgent">
+                    <h3>🚨 Crisis Hotlines</h3>
+                    <div class="emergency-contact">
+                        <strong>National Suicide Prevention Lifeline</strong><br>
+                        <a href="tel:988">988</a> or <a href="tel:1-800-273-8255">1-800-273-8255</a><br>
+                        Available 24/7
+                    </div>
+                    <div class="emergency-contact">
+                        <strong>Crisis Text Line</strong><br>
+                        Text HOME to <a href="sms:741741">741741</a><br>
+                        Available 24/7
+                    </div>
+                </div>
+                
+                <div class="emergency-card">
+                    <h3>🏥 Professional Help</h3>
+                    <button class="btn" onclick="findTherapist()">Find Local Therapists</button>
+                    <button class="btn" onclick="findPsychiatrist()">Find Psychiatrists</button>
+                    <button class="btn" onclick="findSupport()">Support Groups</button>
+                </div>
+                
+                <div class="emergency-card">
+                    <h3>🧘‍♀️ Immediate Coping</h3>
+                    <button class="btn" onclick="startBreathing()">Breathing Exercise</button>
+                    <button class="btn" onclick="startGrounding()">5-4-3-2-1 Grounding</button>
+                    <button class="btn" onclick="playCalming()">Calming Sounds</button>
+                </div>
+                
+                <div class="emergency-card">
+                    <h3>📞 Specialized Support</h3>
+                    <div class="emergency-contact">
+                        <strong>LGBTQ+ Support</strong><br>
+                        <a href="tel:1-866-488-7386">1-866-488-7386</a>
+                    </div>
+                    <div class="emergency-contact">
+                        <strong>Veterans Crisis Line</strong><br>
+                        <a href="tel:1-800-273-8255">1-800-273-8255</a> Press 1
+                    </div>
+                    <div class="emergency-contact">
+                        <strong>Teen Line</strong><br>
+                        <a href="tel:1-800-852-8336">1-800-852-8336</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="safety-plan" style="margin-top: 30px;">
+                <h3>📋 Personal Safety Plan</h3>
+                <p>Create a personalized plan for managing crisis situations:</p>
+                <button class="btn" onclick="createSafetyPlan()">Create Safety Plan</button>
+                <button class="btn" onclick="viewSafetyPlan()">View My Plan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMood = null;
+        let moodData = [3, 4, 2, 5, 3, 4, 4]; // Sample data
+        let moodChart = null;
+        let isRecording = false;
+        let yearPixelsData = {};
+        let currentVisualization = 'chart';
+        
+        // Tab switching functionality
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked nav tab
+            event.target.classList.add('active');
+            
+            // Initialize specific tab content
+            if (tabName === 'analytics') {
+                if (!moodChart) {
+                    initMoodChart();
+                }
+                if (currentVisualization === 'pixels') {
+                    generateYearPixels();
+                }
+            }
+        }
+        
+        // Voice recording functionality
+        function toggleVoiceRecording() {
+            const voiceBtn = document.getElementById('voice-btn');
+            const voiceStatus = document.getElementById('voice-status');
+            
+            if (!isRecording) {
+                // Start recording
+                isRecording = true;
+                voiceBtn.textContent = '⏹️ Stop Recording';
+                voiceBtn.style.background = '#dc3545';
+                voiceStatus.style.display = 'block';
+                
+                // Simulate voice recording (in real app, would use Web Speech API)
+                setTimeout(() => {
+                    if (isRecording) {
+                        stopVoiceRecording();
+                        analyzeVoiceTone();
+                    }
+                }, 5000);
+            } else {
+                stopVoiceRecording();
+            }
+        }
+        
+        function stopVoiceRecording() {
+            isRecording = false;
+            const voiceBtn = document.getElementById('voice-btn');
+            const voiceStatus = document.getElementById('voice-status');
+            
+            voiceBtn.textContent = '🎤 Record Voice Entry';
+            voiceBtn.style.background = '#28a745';
+            voiceStatus.style.display = 'none';
+        }
+        
+        function analyzeVoiceTone() {
+            const voiceAnalysis = document.getElementById('voice-analysis');
+            
+            // Simulate voice tone analysis
+            const toneResults = [
+                { tone: 'Calm', confidence: 85, message: '🎵 Your voice tone suggests calmness. This is great for your mental state!' },
+                { tone: 'Stressed', confidence: 72, message: '😰 I detect some stress in your voice. Consider trying a breathing exercise.' },
+                { tone: 'Happy', confidence: 91, message: '😊 Your voice sounds upbeat! Whatever you\'re doing, keep it up!' },
+                { tone: 'Tired', confidence: 78, message: '😴 You sound tired. Make sure you\'re getting enough rest.' }
+            ];
+            
+            const randomResult = toneResults[Math.floor(Math.random() * toneResults.length)];
+            
+            voiceAnalysis.className = 'sentiment-display sentiment-neutral';
+            voiceAnalysis.innerHTML = `<strong>Voice Tone Analysis:</strong> ${randomResult.message} (${randomResult.confidence}% confidence)`;
+            voiceAnalysis.style.display = 'block';
+        }
+        
+        // Quick prompts functionality
+        function showQuickPrompts() {
+            const promptsDiv = document.getElementById('quick-prompts');
+            promptsDiv.style.display = promptsDiv.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function usePrompt(prompt) {
+            const textarea = document.querySelector('.journal-input');
+            textarea.value = prompt + '\n\n';
+            textarea.focus();
+            document.getElementById('quick-prompts').style.display = 'none';
+        }
+        
+        // Visualization switching
+        function showVisualization(type) {
+            // Hide all visualizations
+            document.getElementById('chart-view').style.display = 'none';
+            document.getElementById('pixels-view').style.display = 'none';
+            document.getElementById('calendar-view').style.display = 'none';
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('#chart-btn, #pixels-btn, #calendar-btn').forEach(btn => {
+                btn.style.background = '';
+            });
+            
+            // Show selected visualization
+            document.getElementById(type + '-view').style.display = 'block';
+            document.getElementById(type + '-btn').style.background = '#28a745';
+            
+            currentVisualization = type;
+            
+            // Initialize specific visualization
+            if (type === 'pixels') {
+                generateYearPixels();
+            } else if (type === 'calendar') {
+                generateMoodCalendar();
+            }
+        }
+        
+        // Generate Year in Pixels
+        function generateYearPixels() {
+            const pixelsContainer = document.getElementById('year-pixels');
+            pixelsContainer.innerHTML = '';
+            
+            const currentYear = new Date().getFullYear();
+            const startDate = new Date(currentYear, 0, 1);
+            const endDate = new Date(currentYear, 11, 31);
+            
+            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                const pixel = document.createElement('div');
+                const dateStr = d.toISOString().split('T')[0];
+                
+                // Simulate mood data for the year
+                const mood = yearPixelsData[dateStr] || (Math.random() > 0.7 ? Math.floor(Math.random() * 5) + 1 : null);
+                
+                if (mood) {
+                    pixel.className = `pixel pixel-${mood}`;
+                    pixel.title = `${d.toLocaleDateString()}: ${getMoodLabel(mood)}`;
+                } else {
+                    pixel.className = 'pixel pixel-empty';
+                    pixel.title = `${d.toLocaleDateString()}: No data`;
+                }
+                
+                pixelsContainer.appendChild(pixel);
+            }
+        }
+        
+        function getMoodLabel(mood) {
+            const labels = ['', 'Very Sad', 'Sad', 'Neutral', 'Happy', 'Very Happy'];
+            return labels[mood] || 'Unknown';
+        }
+        
+        // Generate mood calendar
+        function generateMoodCalendar() {
+            const calendarContainer = document.getElementById('mood-calendar');
+            calendarContainer.innerHTML = '<p>Interactive calendar view showing mood patterns by month and day of week...</p>';
+            // In a real app, this would generate a full calendar interface
+        }
+        
+        // Goals functionality
+        function showGoalForm() {
+            document.getElementById('goal-form').style.display = 'block';
+        }
+        
+        function hideGoalForm() {
+            document.getElementById('goal-form').style.display = 'none';
+        }
+        
+        function saveGoal() {
+            const type = document.getElementById('goal-type').value;
+            const description = document.getElementById('goal-description').value;
+            const target = document.getElementById('goal-target').value;
+            
+            if (!description || !target) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            alert(`Goal saved: ${description} (${target} times per week)`);
+            hideGoalForm();
+            
+            // Clear form
+            document.getElementById('goal-description').value = '';
+            document.getElementById('goal-target').value = '';
+        }
+        
+        function logGoalProgress(goalType) {
+            alert(`Progress logged for ${goalType}! Keep up the great work! 🎉`);
+            event.target.textContent = '✅ Completed Today';
+            event.target.style.background = '#28a745';
+        }
+        
+        // Emergency resources functionality
+        function findTherapist() {
+            alert('This would connect to a therapist directory API to find local mental health professionals based on your location and insurance.');
+        }
+        
+        function findPsychiatrist() {
+            alert('This would search for psychiatrists in your area who can prescribe medication if needed.');
+        }
+        
+        function findSupport() {
+            alert('This would show local and online support groups for various mental health conditions.');
+        }
+        
+        function startBreathing() {
+            alert('Starting guided breathing exercise: Breathe in for 4 counts, hold for 4, breathe out for 6. This would be an interactive breathing guide.');
+        }
+        
+        function startGrounding() {
+            alert('5-4-3-2-1 Grounding Technique:\n\n5 things you can see\n4 things you can touch\n3 things you can hear\n2 things you can smell\n1 thing you can taste\n\nThis would be an interactive guided exercise.');
+        }
+        
+        function playCalming() {
+            alert('This would play calming nature sounds, white noise, or meditation music to help reduce anxiety.');
+        }
+        
+        function createSafetyPlan() {
+            alert('This would open a guided form to create a personalized safety plan including:\n- Warning signs\n- Coping strategies\n- Support contacts\n- Professional resources\n- Environmental safety');
+        }
+        
+        function viewSafetyPlan() {
+            alert('This would display your personalized safety plan with quick access to all your coping strategies and emergency contacts.');
+        }
+        
+        // Enhanced AI predictions
+        function generatePredictiveAlerts() {
+            const alerts = [
+                { type: 'warning', message: '⚠️ Pattern Alert: Your mood tends to dip on Mondays. Consider scheduling something enjoyable for tomorrow.' },
+                { type: 'positive', message: '🌟 Opportunity: You feel 40% better after exercise. Your calendar shows free time at 3 PM - perfect for a walk!' },
+                { type: 'insight', message: '💡 Insight: Your sleep quality strongly correlates with next-day mood. Tonight\'s forecast: prioritize 8+ hours.' }
+            ];
+            
+            const alertsContainer = document.getElementById('predictive-alerts');
+            const randomAlert = alerts[Math.floor(Math.random() * alerts.length)];
+            
+            alertsContainer.innerHTML = `
+                <div style="padding: 15px; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 5px; margin-top: 15px;">
+                    ${randomAlert.message}
+                </div>
+            `;
+        }
+        
+        // Mood selection
+        function selectMood(rating, emoji, label) {
+            // Remove previous selection
+            document.querySelectorAll('.mood-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selection to clicked option
+            event.target.closest('.mood-option').classList.add('selected');
+            
+            currentMood = {
+                rating: rating,
+                emoji: emoji,
+                label: label,
+                timestamp: new Date()
+            };
+        }
+        
+        // Sentiment analysis simulation
+        function analyzeSentiment(text) {
+            const sentimentResult = document.getElementById('sentiment-result');
+            
+            if (text.length < 10) {
+                sentimentResult.style.display = 'none';
+                return;
+            }
+            
+            // Simple sentiment analysis simulation
+            const positiveWords = ['happy', 'good', 'great', 'amazing', 'wonderful', 'love', 'excited', 'grateful', 'blessed', 'joy'];
+            const negativeWords = ['sad', 'bad', 'terrible', 'awful', 'hate', 'angry', 'frustrated', 'depressed', 'anxious', 'worried'];
+            
+            const words = text.toLowerCase().split(' ');
+            let positiveCount = 0;
+            let negativeCount = 0;
+            
+            words.forEach(word => {
+                if (positiveWords.some(pw => word.includes(pw))) positiveCount++;
+                if (negativeWords.some(nw => word.includes(nw))) negativeCount++;
+            });
+            
+            let sentiment, className, message;
+            
+            if (positiveCount > negativeCount) {
+                sentiment = 'Positive';
+                className = 'sentiment-positive';
+                message = '😊 Your entry reflects positive emotions. Keep nurturing these feelings!';
+            } else if (negativeCount > positiveCount) {
+                sentiment = 'Negative';
+                className = 'sentiment-negative';
+                message = '💙 I notice some challenging emotions. Remember, it\'s okay to feel this way. Consider trying a wellness activity.';
+            } else {
+                sentiment = 'Neutral';
+                className = 'sentiment-neutral';
+                message = '😐 Your entry seems balanced. Reflecting on your day is a great practice!';
+            }
+            
+            sentimentResult.className = `sentiment-display ${className}`;
+            sentimentResult.innerHTML = `<strong>Sentiment Analysis:</strong> ${message}`;
+            sentimentResult.style.display = 'block';
+        }
+        
+        // Save mood entry
+        function saveMoodEntry() {
+            if (!currentMood) {
+                alert('Please select your mood first!');
+                return;
+            }
+            
+            // Add to mood data
+            moodData.push(currentMood.rating);
+            if (moodData.length > 30) {
+                moodData.shift(); // Keep only last 30 days
+            }
+            
+            // Update chart if it exists
+            if (moodChart) {
+                updateMoodChart();
+            }
+            
+            // Show success message
+            alert(`Mood saved! ${currentMood.emoji} Thank you for tracking your mental health journey.`);
+            
+            // Reset form
+            document.querySelectorAll('.mood-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector('.journal-input').value = '';
+            document.getElementById('sentiment-result').style.display = 'none';
+            currentMood = null;
+            
+            // Update AI insights
+            updateAIInsights();
+        }
+        
+        // Initialize mood chart
+        function initMoodChart() {
+            const ctx = document.getElementById('moodChart').getContext('2d');
+            const labels = [];
+            const today = new Date();
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+            }
+            
+            moodChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Mood Rating',
+                        data: moodData.slice(-7),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    const moods = ['', '😢 Very Sad', '😔 Sad', '😐 Neutral', '😊 Happy', '😄 Very Happy'];
+                                    return moods[value] || '';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update mood chart
+        function updateMoodChart() {
+            if (moodChart) {
+                moodChart.data.datasets[0].data = moodData.slice(-7);
+                moodChart.update();
+            }
+        }
+        
+        // Update AI insights
+        function updateAIInsights() {
+            const insights = [
+                "Your mood has been steadily improving! Keep up the great work with your wellness routine.",
+                "I notice you feel better on days when you exercise. Consider adding more physical activity.",
+                "Your journaling shows increased self-awareness. This is a powerful tool for mental health.",
+                "Weekend moods tend to be higher. Try incorporating weekend activities into weekdays.",
+                "Your sleep patterns correlate with mood improvements. Prioritize good sleep hygiene."
+            ];
+            
+            const randomInsight = insights[Math.floor(Math.random() * insights.length)];
+            document.getElementById('ai-prediction').textContent = randomInsight;
+        }
+        
+        // Start wellness activity
+        function startActivity(type) {
+            const activities = {
+                meditation: "Starting guided meditation session... 🧘‍♀️",
+                exercise: "Tracking your walk. Remember to stay hydrated! 🏃‍♂️",
+                learning: "Opening wellness articles library... 📚",
+                music: "Playing your personalized calm playlist... 🎵",
+                social: "Here are some conversation starters for reaching out... 👥",
+                sleep: "Loading your personalized bedtime routine... 💤"
+            };
+            
+            alert(activities[type] || "Activity started!");
+        }
+        
+        // Share community post
+        function sharePost() {
+            const textarea = document.querySelector('#community textarea');
+            if (textarea.value.trim()) {
+                alert('Your anonymous post has been shared with the community. Thank you for contributing! 💙');
+                textarea.value = '';
+            } else {
+                alert('Please write something to share with the community.');
+            }
+        }
+        
+        // Support community post
+        function supportPost(button) {
+            const currentCount = parseInt(button.textContent.match(/\d+/)[0]);
+            button.innerHTML = `💙 Support (${currentCount + 1})`;
+            button.style.background = '#28a745';
+            setTimeout(() => {
+                button.style.background = '';
+            }, 1000);
+        }
+        
+        // Connect wearable device
+        function connectDevice(deviceType) {
+            const devices = {
+                'apple-watch': 'Apple Watch',
+                'fitbit': 'Fitbit',
+                'garmin': 'Garmin',
+                'samsung': 'Samsung Health'
+            };
+            
+            alert(`Connecting to ${devices[deviceType]}... This would integrate with the device's health API to sync biometric data securely.`);
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simulate some initial data
+            updateAIInsights();
+            generatePredictiveAlerts();
+            
+            // Initialize visualization buttons
+            document.getElementById('chart-btn').style.background = '#28a745';
+            
+            // Add some sample mood entries over time
+            setTimeout(() => {
+                if (moodData.length < 10) {
+                    // Add some variation to make it more realistic
+                    const variations = [3, 4, 2, 5, 3, 4, 4, 3, 5, 4];
+                    moodData = variations.slice(0, 7);
+                }
+                
+                // Generate some year pixels data
+                generateSampleYearData();
+            }, 1000);
+        });
+        
+        // Generate sample year data for pixels view
+        function generateSampleYearData() {
+            const currentYear = new Date().getFullYear();
+            const startDate = new Date(currentYear, 0, 1);
+            const today = new Date();
+            
+            for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+                const dateStr = d.toISOString().split('T')[0];
+                if (Math.random() > 0.3) { // 70% chance of having mood data
+                    yearPixelsData[dateStr] = Math.floor(Math.random() * 5) + 1;
+                }
+            }
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97e55bcb22789f4a',t:'MTc1Nzc0MjUzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
